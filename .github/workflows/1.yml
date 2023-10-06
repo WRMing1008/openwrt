@@ -140,11 +140,10 @@ jobs:
       with:
         name: ACRH17_AC42U-OpenWrt
         path: ${{ env.FIRMWARE }}
-
-   - name: 生成标签
-     id: tag
-     if: env.UPLOAD_RELEASE == 'true' && !cancelled()
-     run: |
+    - name: 生成标签
+      id: tag
+      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      run: |
        time=$(date +%Y.%m.%d)
        Rtime=$(date +%Y.%m.%d-%H:%M)
        release_tag="ACRH17_AC42U-$time"
@@ -156,12 +155,12 @@ jobs:
        echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
        echo "status=success" >> $GITHUB_OUTPUT
 
-   - name: 上传固件至项目
-     uses: softprops/action-gh-release@v1
-     if: steps.tag.outputs.status == 'success' && !cancelled()
-     env:
+    - name: 上传固件至项目
+      uses: softprops/action-gh-release@v1
+      if: steps.tag.outputs.status == 'success' && !cancelled()
+      env:
        GITHUB_TOKEN: ${{ secrets.GIT_USER_TOKEN }}
-     with:
+      with:
        name: ${{ steps.tag.outputs.release_name }}
        tag_name: ${{ steps.tag.outputs.release_tag }}
        body_path: release.txt
