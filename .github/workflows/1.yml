@@ -20,8 +20,8 @@ on:
         default: 'false'
 
 #定时触发开始编译
-#  schedule:
-#  - cron: 0 17 14 * *
+  schedule:
+  - cron: 0 17 14 * *
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt.git
@@ -34,7 +34,7 @@ env:
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: false
   TZ: Asia/Shanghai
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -42,7 +42,7 @@ jobs:
     steps:
     - name: 检查
       uses: actions/checkout@main
-    
+
     - name: 安装编译环境
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -60,7 +60,7 @@ jobs:
         sudo -E timedatectl set-timezone "Asia/Shanghai"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
-    
+
     - name: 下载源码
       working-directory: /workdir
       run: |
@@ -105,7 +105,7 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
         make download -j8
-        
+
     - name: 整合固件
       id: compile
       run: |
@@ -130,7 +130,7 @@ jobs:
         rm -rf sha256sums
         rm -rf version.buildinfo
         sleep 2
-        mv *.bin ACRH17_AC42U-$(date +%Y.%m.%d-%H.%M).bin
+        mv *.bin ACRH17_AC42U-$(date +%Y.%m.%d-%H.%M)_immortalwrt.bin
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
@@ -141,42 +141,42 @@ jobs:
         name: ACRH17_AC42U-OpenWrt
         path: ${{ env.FIRMWARE }}
 
-#    - name: 生成标签
-#      id: tag
-#      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
-#      run: |
-#        time=$(date +%Y.%m.%d)
-#        Rtime=$(date +%Y.%m.%d-%H:%M)
-#        release_tag="ACRH17_AC42U-$time"
-#        release_name="ACRH17_AC42U-$Rtime"
-#        echo "本固件集成常用插件，linux_6.1内核。
-#        默认网关：192.168.100.2
-#        默认用户名|密码：root | password" >> release.txt
-#        echo "release_name=$release_name" >> $GITHUB_OUTPUT
-#        echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
-#        echo "status=success" >> $GITHUB_OUTPUT
-        
-#    - name: 上传固件至项目
-#      uses: softprops/action-gh-release@v1
-#      if: steps.tag.outputs.status == 'success' && !cancelled()
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GIT_USER_TOKEN }}
-#      with:
-#        name: ${{ steps.tag.outputs.release_name }} 
-#        tag_name: ${{ steps.tag.outputs.release_tag }}
-#        body_path: release.txt
-#        files: ${{ env.FIRMWARE }}/*
+   - name: 生成标签
+     id: tag
+     if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+     run: |
+       time=$(date +%Y.%m.%d)
+       Rtime=$(date +%Y.%m.%d-%H:%M)
+       release_tag="ACRH17_AC42U-$time"
+       release_name="ACRH17_AC42U-$Rtime"
+       echo "本固件集成常用插件，linux_6.1内核。
+       默认网关：192.168.100.2
+       默认用户名|密码：root | password" >> release.txt
+       echo "release_name=$release_name" >> $GITHUB_OUTPUT
+       echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
+       echo "status=success" >> $GITHUB_OUTPUT
+
+   - name: 上传固件至项目
+     uses: softprops/action-gh-release@v1
+     if: steps.tag.outputs.status == 'success' && !cancelled()
+     env:
+       GITHUB_TOKEN: ${{ secrets.GIT_USER_TOKEN }}
+     with:
+       name: ${{ steps.tag.outputs.release_name }}
+       tag_name: ${{ steps.tag.outputs.release_tag }}
+       body_path: release.txt
+       files: ${{ env.FIRMWARE }}/*
 
     - name: 删除任务
       uses: FunctionXJB/delete-workflow-runs@main
       with:
         retain_days: 18
         keep_minimum_runs: 3
-        
+
     - name: 'Server酱通知'
       uses: easychen/github-action-server-chan@v1.0.0
       if: steps.compile.outputs.status == 'success' && !cancelled()
       with:
          desp: 🎉华硕RT-ACRH17固件编译成功，尽情搞机吧🎉
          sendkey: ${{ secrets.sendkey }}
-         title: " ACRH17_AC42U固件编译成功"
+         title: " ACRH17_AC42U@immortalwrt固件编译成功"
