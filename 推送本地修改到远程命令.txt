@@ -1,8 +1,0 @@
-ming@ming-PC:$git add -A
-ming@ming-PC:$git commit -m "修改说明"
-ming@ming-PC:$ git push origin main
-Username for 'https://github.com': WRMing1008
-Password for 'https://WRMing1008@github.com':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
-
-
-wrming1008令牌:   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
